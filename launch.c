@@ -1,23 +1,46 @@
 #include "launch.h"
-#include <stdio.h>     //perror
-#include <stdlib.h>    //exit, EXIT_FAILURE
-#include <sys/types.h> //pid_t
-#include <sys/wait.h>  //waitpid
-#include <unistd.h>    //fork, execvp
+#include <errno.h>
+#include <stdio.h>     // fprintf, perror
+#include <stdlib.h>    // exit, EXIT_FAILURE
+#include <string.h>    // strerror
+#include <sys/types.h> // pid_t
+#include <sys/wait.h>  // waitpid, WIF*
+#include <unistd.h>    // fork, execvp, _exit
 
 int mini_shell_launch(char **args) {
-    // execvp
-    pid_t pid, wpid;
-    int status;
-    pid = fork();
+    pid_t pid = fork();
+    if (pid < 0) {
+        // fork failed
+        fprintf(stderr, "mini-shell: fork: %s\n", strerror(errno));
+        return 1;
+    }
     if (pid == 0) {
-        if (execvp(args[0], args) == -1)
-            perror("mini_shell error at execvp");
-        exit(EXIT_FAILURE);
+        // Child: try to exec
+        execvp(args[0], args);
+        // If we reach here, exec failed; report clear message
+        int e = errno;
+        if (e == ENOENT) {
+            fprintf(stderr, "mini-shell: command not found: %s\n", args[0]);
+        } else if (e == EACCES) {
+            fprintf(stderr, "mini-shell: permission denied: %s\n", args[0]);
+        } else if (e == ENOEXEC) {
+            fprintf(stderr, "mini-shell: exec format error: %s\n", args[0]);
+        } else {
+            fprintf(stderr, "mini-shell: execvp(%s) failed: %s\n", args[0], strerror(e));
+        }
+        _exit(127);
     } else {
-        do {
-            wpid = waitpid(pid, &status, WUNTRACED);
-        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        // Parent: wait for child
+        int status = 0;
+        while (1) {
+            pid_t w = waitpid(pid, &status, 0);
+            if (w == -1) {
+                if (errno == EINTR) continue;
+                fprintf(stderr, "mini-shell: waitpid: %s\n", strerror(errno));
+                break;
+            }
+            if (WIFEXITED(status) || WIFSIGNALED(status)) break;
+        }
         return 1;
     }
 }
