@@ -23,3 +23,11 @@ char **mini_shell_split_line(char *line);
  * @return int 运行状态
  */
 int mini_shell_execute(char **args);
+
+/**
+ * @brief 处理原始输入行（包含 !n 展开与历史写入）并执行
+ *
+ * @param line_raw 原始行（带或不带换行）
+ * @return int 状态；1 继续循环，0 退出
+ */
+int mini_shell_process_and_execute(char *line_raw);

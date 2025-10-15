@@ -1,11 +1,13 @@
 #include "builtin.h"
+#include "history.h"
 #include <stdio.h>  //perror
 #include <unistd.h> //NULL, getcwd
 
-char *builtin_cmd[] = {"help", "cd", "pwd", "exit"};
+char *builtin_cmd[] = {"help", "cd", "pwd", "history", "exit"};
 
 int (*builtin_func[])(char **) = {&mini_shell_help, &mini_shell_cd,
-                                  mini_shell_pwd, &mini_shell_exit};
+                                  mini_shell_pwd, &mini_shell_history,
+                                  &mini_shell_exit};
 
 int mini_shell_builtin_nums() {
     return sizeof(builtin_cmd) / sizeof(builtin_cmd[0]);
@@ -40,4 +42,9 @@ int mini_shell_pwd(char **args) {
     return 1;
 }
 
+int mini_shell_history(char **args) {
+    // no args expected
+    history_print();
+    return 1;
+}
 int mini_shell_exit(char **args) { return 0; }

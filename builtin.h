@@ -34,3 +34,11 @@ int mini_shell_pwd(char **args);
  * @return int 运行状态
  */
 int mini_shell_exit(char **args);
+
+/**
+ * @brief 内置history命令
+ *
+ * @param args 命令参数
+ * @return int 运行状态
+ */
+int mini_shell_history(char **args);
