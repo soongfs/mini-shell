@@ -18,8 +18,8 @@ static char *ms_strdup(const char *s) {
 }
 
 static HistEntry ring[HIST_SIZE];
-static int h_start = 0; // index of oldest
-static int h_size = 0;  // current size
+static int h_start = 0;
+static int h_size = 0;
 
 void history_free_all(void) {
     for (int i = 0; i < h_size; ++i) {

@@ -10,7 +10,6 @@ void mini_shell_loop(void) {
     do {
         char path[256] = {0};
         if (!getcwd(path, sizeof(path) - 1)) {
-            // fallback
             snprintf(path, sizeof(path), "?");
         }
         char prompt[512];

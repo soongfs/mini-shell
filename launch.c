@@ -10,14 +10,11 @@
 int mini_shell_launch(char **args) {
     pid_t pid = fork();
     if (pid < 0) {
-        // fork failed
         fprintf(stderr, "mini-shell: fork: %s\n", strerror(errno));
         return 1;
     }
     if (pid == 0) {
-        // Child: try to exec
         execvp(args[0], args);
-        // If we reach here, exec failed; report clear message
         int e = errno;
         if (e == ENOENT) {
             fprintf(stderr, "mini-shell: command not found: %s\n", args[0]);
@@ -26,20 +23,22 @@ int mini_shell_launch(char **args) {
         } else if (e == ENOEXEC) {
             fprintf(stderr, "mini-shell: exec format error: %s\n", args[0]);
         } else {
-            fprintf(stderr, "mini-shell: execvp(%s) failed: %s\n", args[0], strerror(e));
+            fprintf(stderr, "mini-shell: execvp(%s) failed: %s\n", args[0],
+                    strerror(e));
         }
         _exit(127);
     } else {
-        // Parent: wait for child
         int status = 0;
         while (1) {
             pid_t w = waitpid(pid, &status, 0);
             if (w == -1) {
-                if (errno == EINTR) continue;
+                if (errno == EINTR)
+                    continue;
                 fprintf(stderr, "mini-shell: waitpid: %s\n", strerror(errno));
                 break;
             }
-            if (WIFEXITED(status) || WIFSIGNALED(status)) break;
+            if (WIFEXITED(status) || WIFSIGNALED(status))
+                break;
         }
         return 1;
     }
